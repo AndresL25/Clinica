@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Consultar Datos - Clínica{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-info text-white text-center py-3">
+                    <h3 class="mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        Consultar Mis Datos
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form id="consultarForm">
+                        <div class="mb-4">
+                            <label for="codigo_registro" class="form-label">
+                                <i class="fas fa-id-card me-1"></i>
+                                Código de Registro *
+                            </label>
+                            <input type="text" class="form-control form-control-lg" 
+                                   id="codigo_registro" name="codigo_registro" 
+                                   placeholder="Ej: REG-ABC12345" required>
+                            <small class="text-muted">
+                                Ingresa el código que recibiste al registrarte
+                            </small>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-info btn-lg">
+                                <i class="fas fa-search me-2"></i>
+                                Buscar Mis Datos
+                            </button>
+                            <button type="button" class="btn btn-outline-info" onclick="buscarCitas()">
+                                <i class="fas fa-calendar me-2"></i>
+                                Ver Solo Mis Citas
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="loadingIndicator" class="container text-center" style="display: none;">
+    <div class="spinner-border text-info"></div>
+    <p class="mt-2">Buscando tus datos...</p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('consultarForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const codigo = document.getElementById('codigo_registro').value.trim();
+    if (codigo) {
+        document.getElementById('loadingIndicator').style.display = 'block';
+        window.location.href = `/usuario/${codigo}?web=1`;
+    }
+});
+
+function buscarCitas() {
+    const codigo = document.getElementById('codigo_registro').value.trim();
+    if (codigo) {
+        document.getElementById('loadingIndicator').style.display = 'block';
+        window.location.href = `/citas/${codigo}?web=1`;
+    } else {
+        alert('Por favor ingresa tu código de registro');
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil de {{ usuario.nombre }} - Clínica{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Header del perfil -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h3 class="mb-0">
+                                <i class="fas fa-user-circle me-2"></i>Perfil de Paciente
+                            </h3>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-light text-primary">{{ usuario.codigo_registro }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5><i class="fas fa-user me-2"></i>{{ usuario.nombre }}</h5>
+                            <p class="text-muted mb-1"><i class="fas fa-envelope me-2"></i>{{ usuario.email }}</p>
+                            <p class="text-muted"><i class="fas fa-phone me-2"></i>{{ usuario.telefono }}</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <small class="text-muted">Registrado: {{ usuario.fecha_registro }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Botones de acción -->
+            <div class="row g-2 mb-4">
+                <div class="col-md-3">
+                    <button class="btn btn-success w-100" onclick="mostrarFormularioSintomas()">
+                        <i class="fas fa-plus-circle me-2"></i>Reportar Síntomas
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-info w-100" onclick="mostrarFormularioFoto()">
+                        <i class="fas fa-camera me-2"></i>Subir Foto
+                    </button>
+                </div>
+                <div class="col-md-3">
+                    <a href="/citas/{{ usuario.codigo_registro }}?web=1" class="btn btn-warning w-100">
+                        <i class="fas fa-calendar me-2"></i>Ver Citas
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <a href="/consultar" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-arrow-left me-2"></i>Volver
+                    </a>
+                </div>
+            </div>
+
+            <!-- Síntomas -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clipboard-list me-2 text-danger"></i>
+                        Síntomas Reportados ({{ sintomas|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if sintomas %}
+                        <div class="row g-3">
+                            {% for sintoma in sintomas %}
+                            <div class="col-md-6">
+                                <div class="border p-3 rounded">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <small class="text-muted">{{ sintoma.fecha }}</small>
+                                        <span class="badge bg-{{ 'danger' if sintoma.intensidad >= 8 else 'warning' if sintoma.intensidad >= 5 else 'success' }}">
+                                            {{ sintoma.intensidad }}/10
+                                        </span>
+                                    </div>
+                                    <p class="mb-0">{{ sintoma.descripcion }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-clipboard-list" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <p class="mt-2">No has reportado síntomas aún</p>
+                            <button class="btn btn-success" onclick="mostrarFormularioSintomas()">
+                                Reportar Primer Síntoma
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Fotos -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-images me-2 text-info"></i>
+                        Fotos Subidas ({{ fotos|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if fotos %}
+                        <div class="row g-3">
+                            {% for foto in fotos %}
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <img src="{{ foto.url }}" class="card-img-top" alt="Foto médica" 
+                                         style="height: 200px; object-fit: cover; cursor: pointer;"
+                                         onclick="mostrarFoto('{{ foto.url }}', '{{ foto.descripcion }}')">
+                                    <div class="card-body p-2">
+                                        <small class="text-muted">{{ foto.fecha }}</small>
+                                        {% if foto.descripcion %}
+                                            <p class="small mb-0">{{ foto.descripcion }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-camera" style="font-size: 3rem; opacity: 0.3;"></i>
+                            <p class="mt-2">No has subido fotos aún</p>
+                            <button class="btn btn-info" onclick="mostrarFormularioFoto()">
+                                Subir Primera Foto
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Síntomas -->
+<div class="modal fade" id="sintomasModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Reportar Síntomas</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="sintomasForm">
+                <div class="modal-body">
+                    <input type="hidden" name="codigo_registro" value="{{ usuario.codigo_registro }}">
+                    <div class="mb-3">
+                        <label class="form-label">Descripción de síntomas *</label>
+                        <textarea class="form-control" name="descripcion" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Intensidad (1-10) *</label>
+                        <input type="range" class="form-range" name="intensidad" min="1" max="10" value="5" 
+                               oninput="document.getElementById('intensidadVal').textContent = this.value">
+                        <div class="text-center">
+                            <span class="badge bg-secondary" id="intensidadVal">5</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Foto -->
+<div class="modal fade" id="fotoModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">Subir Foto</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="fotoForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" name="codigo_registro" value="{{ usuario.codigo_registro }}">
+                    <div class="mb-3">
+                        <label class="form-label">Seleccionar foto *</label>
+                        <input type="file" class="form-control" name="foto" accept="image/*" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" name="descripcion" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-info">Subir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ver Foto -->
+<div class="modal fade" id="verFotoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <img id="fotoGrande" src="" class="img-fluid" alt="Foto">
+                <p id="fotoDesc" class="mt-2 text-muted"></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function mostrarFormularioSintomas() {
+    new bootstrap.Modal(document.getElementById('sintomasModal')).show();
+}
+
+function mostrarFormularioFoto() {
+    new bootstrap.Modal(document.getElementById('fotoModal')).show();
+}
+
+function mostrarFoto(url, desc) {
+    document.getElementById('fotoGrande').src = url;
+    document.getElementById('fotoDesc').textContent = desc || '';
+    new bootstrap.Modal(document.getElementById('verFotoModal')).show();
+}
+
+// Envío síntomas
+document.getElementById('sintomasForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    data.intensidad = parseInt(data.intensidad);
+    
+    fetch('/sintomas', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) alert('Error: ' + data.error);
+        else { alert('Síntomas reportados exitosamente'); location.reload(); }
+    });
+});
+
+// Envío foto
+document.getElementById('fotoForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    fetch('/fotos', {
+        method: 'POST',
+        body: new FormData(this)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) alert('Error: ' + data.error);
+        else { alert('Foto subida exitosamente'); location.reload(); }
+    });
+});
+</script>
+{% endblock %}
